@@ -122,48 +122,37 @@
       gap: 16px;
     }
 
-    /* ---------- PHONE BUTTON ---------- */
-    .phone-btn {
+    /* ---------- FLOATING PHONE BUTTON (FAB) ---------- */
+    .phone-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
       background: #FF6D00;
       color: #FFFFFF;
       border: none;
-      border-radius: 12px;
-      padding: 12px 20px;
-      font-size: 15px;
-      font-weight: 600;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
       cursor: pointer;
       transition: all 0.3s ease;
       text-decoration: none;
-    }
-
-    .phone-btn:hover {
-      background: #E65C00;
+      z-index: 9998;
       box-shadow: 0 4px 16px rgba(255, 109, 0, 0.4);
     }
 
-    .phone-btn svg {
-      width: 18px;
-      height: 18px;
+    .phone-fab:hover {
+      background: #E65C00;
+      transform: scale(1.1);
+      box-shadow: 0 6px 24px rgba(255, 109, 0, 0.5);
+    }
+
+    .phone-fab svg {
+      width: 28px;
+      height: 28px;
       fill: currentColor;
-    }
-
-    .phone-btn-text {
-      transition: opacity 0.2s ease, width 0.3s ease;
-    }
-
-    .header.scrolled .phone-btn {
-      padding: 12px 14px;
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
-      justify-content: center;
-    }
-
-    .header.scrolled .phone-btn-text {
-      display: none;
     }
 
     /* ---------- LANGUAGE ---------- */
@@ -279,20 +268,16 @@
         height: 24px;
       }
 
-      .phone-btn {
-        padding: 10px 16px;
+      .phone-fab {
+        width: 52px;
+        height: 52px;
+        bottom: 16px;
+        right: 16px;
       }
 
-      .phone-btn-text {
-        display: none;
-      }
-
-      .header:not(.scrolled) .phone-btn {
-        width: 44px;
-        height: 44px;
-        padding: 10px;
-        border-radius: 50%;
-        justify-content: center;
+      .phone-fab svg {
+        width: 24px;
+        height: 24px;
       }
 
       .demo-content {
@@ -356,14 +341,7 @@
           <option>DA</option>
         </select>
 
-        <a href="tel:+31612345678" class="phone-btn">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-          </svg>
-          <span class="phone-btn-text">Bel ons</span>
-        </a>
-
-        <button class="hamburger">
+        <button class="hamburger" type="button">
           <span></span>
           <span></span>
           <span></span>
@@ -411,6 +389,13 @@
       <p>Scroll terug omhoog om het menu weer te zien verschijnen.</p>
     </div>
   </div>
+
+  <!-- Floating Phone Button -->
+  <a href="tel:+31612345678" class="phone-fab" title="Bel ons">
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+    </svg>
+  </a>
 
   <script>
     // Scroll detection
