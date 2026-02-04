@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Green Marine - Header Prototype</title>
+  <link href="https://fonts.cdnfonts.com/css/neue-kabel" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/gilroy-bold" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Gilroy-Light', 'Gilroy', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #F7F8F7;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Neue Kabel', 'Gilroy', sans-serif;
+      font-weight: 400;
+    }
+
+    /* ---------- HEADER ---------- */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 72px;
+      background: #FFFFFF;
+      border-bottom: 1px solid #E3E6E5;
+      z-index: 9999;
+      transition: all 0.3s ease;
+    }
+
+    .header.scrolled {
+      height: 56px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ---------- LOGO ---------- */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: #3CEF2F;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-text {
+      font-family: 'Neue Kabel', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: #262526;
+    }
+
+    .header.scrolled .logo-text {
+      display: none;
+    }
+
+    /* ---------- MENU (default state) ---------- */
+    .menu {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .menu a {
+      font-size: 15px;
+      font-weight: 500;
+      color: #262526;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .menu a:hover {
+      color: #3CEF2F;
+    }
+
+    .header.scrolled .menu {
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+    }
+
+    /* ---------- TRIGGER TEXT (scrolled state) ---------- */
+    .trigger-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: #262526;
+      opacity: 0;
+      pointer-events: none;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      transition: opacity 0.3s ease;
+    }
+
+    .header.scrolled .trigger-text {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ---------- RIGHT SIDE ---------- */
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* ---------- PHONE BUTTON ---------- */
+    .phone-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #FF6D00;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .phone-btn:hover {
+      background: #E65C00;
+      box-shadow: 0 4px 16px rgba(255, 109, 0, 0.4);
+    }
+
+    .phone-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .phone-btn-text {
+      transition: opacity 0.2s ease, width 0.3s ease;
+    }
+
+    .header.scrolled .phone-btn {
+      padding: 12px 14px;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      justify-content: center;
+    }
+
+    .header.scrolled .phone-btn-text {
+      display: none;
+    }
+
+    /* ---------- LANGUAGE ---------- */
+    .lang-select {
+      font-size: 14px;
+      font-weight: 500;
+      color: #262526;
+      background: transparent;
+      border: 1px solid #E3E6E5;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .header.scrolled .lang-select {
+      display: none;
+    }
+
+    /* ---------- MOBILE HAMBURGER ---------- */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .hamburger span {
+      width: 24px;
+      height: 2px;
+      background: #262526;
+      border-radius: 2px;
+    }
+
+    /* ---------- DEMO CONTENT ---------- */
+    .demo-content {
+      padding-top: 72px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #444496 0%, #2d2d6b 100%);
+      padding: 80px 24px;
+      color: white;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 42px;
+      margin-bottom: 16px;
+    }
+
+    .hero p {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+
+    .section {
+      padding: 80px 24px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .section h2 {
+      font-size: 28px;
+      color: #262526;
+      margin-bottom: 16px;
+    }
+
+    .section p {
+      font-size: 16px;
+      color: #666666;
+      margin-bottom: 24px;
+    }
+
+    /* ---------- MOBILE ---------- */
+    @media (max-width: 768px) {
+      .header {
+        height: 64px;
+      }
+
+      .header.scrolled {
+        height: 56px;
+      }
+
+      .menu {
+        display: none;
+      }
+
+      .lang-select {
+        display: none;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .trigger-text {
+        font-size: 14px;
+        max-width: 180px;
+        white-space: normal;
+        text-align: center;
+      }
+
+      .logo-text {
+        display: none;
+      }
+
+      .phone-btn {
+        padding: 10px 16px;
+      }
+
+      .phone-btn-text {
+        display: none;
+      }
+
+      .header:not(.scrolled) .phone-btn {
+        width: 44px;
+        height: 44px;
+        padding: 10px;
+        border-radius: 50%;
+        justify-content: center;
+      }
+
+      .demo-content {
+        padding-top: 64px;
+      }
+
+      .hero {
+        padding: 48px 20px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <!-- Logo -->
+      <a href="#" class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#262526" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <span class="logo-text">Green Marine</span>
+      </a>
+
+      <!-- Menu (visible when not scrolled) -->
+      <nav class="menu">
+        <a href="#">Motoren</a>
+        <a href="#">Zakelijk</a>
+        <a href="#">Showcases</a>
+        <a href="#">Service</a>
+        <a href="#">Over ons</a>
+      </nav>
+
+      <!-- Trigger text (visible when scrolled) -->
+      <div class="trigger-text" id="triggerText">
+        Ontdek welke motor bij uw boot past
+      </div>
+
+      <!-- Right side -->
+      <div class="header-right">
+        <select class="lang-select">
+          <option>NL</option>
+          <option>EN</option>
+          <option>DE</option>
+          <option>SE</option>
+          <option>DA</option>
+        </select>
+
+        <a href="tel:+31612345678" class="phone-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+          </svg>
+          <span class="phone-btn-text">Bel ons</span>
+        </a>
+
+        <button class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DEMO CONTENT (scroll to test) -->
+  <div class="demo-content">
+    <div class="hero">
+      <h1>Vind de juiste elektrische motor</h1>
+      <p>Op basis van uw boot en gebruik</p>
+    </div>
+
+    <div class="section">
+      <h2>Scroll omlaag om het effect te zien</h2>
+      <p>De header verandert wanneer je scrollt: het menu verdwijnt en er verschijnt een trigger tekst die roteert. De belknop wordt een compact icoon.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+    </div>
+
+    <div class="section">
+      <h2>Kenmerken</h2>
+      <p>- Sticky header blijft altijd zichtbaar</p>
+      <p>- Menu zichtbaar bij aankomst op de site</p>
+      <p>- Bij scrollen: trigger tekst die bezoekers aanspoort</p>
+      <p>- Oranje belknop (#FF6D00) altijd prominent</p>
+      <p>- Op mobiel: altijd compact met telefoonicoon</p>
+    </div>
+
+    <div class="section">
+      <h2>Nog meer content</h2>
+      <p>Blijf scrollen om te zien hoe de header zich gedraagt.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam in dui mauris. Vivamus hendrerit arcu sed erat molestie vehicula.</p>
+    </div>
+
+    <div class="section">
+      <h2>Bijna onderaan</h2>
+      <p>De trigger teksten roteren elke 4 seconden.</p>
+      <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>
+    </div>
+
+    <div class="section" style="padding-bottom: 200px;">
+      <h2>Einde</h2>
+      <p>Scroll terug omhoog om het menu weer te zien verschijnen.</p>
+    </div>
+  </div>
+
+  <script>
+    // Scroll detection
+    var header = document.getElementById('header');
+    var triggerText = document.getElementById('triggerText');
+    var scrollThreshold = 50;
+
+    // Trigger texts (rotating)
+    var triggerTexts = [
+      "Ontdek welke motor bij uw boot past",
+      "Binnen 24 uur persoonlijk advies",
+      "Gratis advies, geen verplichtingen",
+      "5 jaar garantie op elke motor"
+    ];
+    var currentTriggerIndex = 0;
+
+    // Scroll handler
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > scrollThreshold) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // Rotate trigger texts every 4 seconds
+    setInterval(function() {
+      currentTriggerIndex = (currentTriggerIndex + 1) % triggerTexts.length;
+
+      // Fade out
+      triggerText.style.opacity = '0';
+
+      setTimeout(function() {
+        triggerText.textContent = triggerTexts[currentTriggerIndex];
+        // Fade in (only if scrolled)
+        if (header.classList.contains('scrolled')) {
+          triggerText.style.opacity = '1';
+        }
+      }, 300);
+    }, 4000);
+  </script>
+
+</body>
+</html>
