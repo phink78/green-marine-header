@@ -86,7 +86,10 @@
       display: flex;
       align-items: center;
       gap: 32px;
-      transition: opacity 0.3s ease, transform 0.3s ease;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: opacity 0.3s ease;
     }
 
     .menu a {
@@ -104,7 +107,6 @@
     .header.scrolled .menu {
       opacity: 0;
       pointer-events: none;
-      position: absolute;
     }
 
     /* ---------- TRIGGER TEXT (scrolled state) ---------- */
@@ -179,7 +181,7 @@
     }
 
     .header.scrolled .lang-select {
-      display: none;
+      padding: 6px 10px;
     }
 
     /* ---------- MOBILE HAMBURGER ---------- */
