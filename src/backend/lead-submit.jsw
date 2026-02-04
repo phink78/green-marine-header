@@ -1,0 +1,145 @@
+// ============================================
+// BACKEND WEB MODULE: /backend/lead-submit.jsw
+// FINAL flow backend (uses currentDrive)
+// Secrets required:
+// - PIPEDRIVE_API_KEY
+// - PIPEDRIVE_COMPANY_DOMAIN  (subdomain only, e.g. "greenmarine")
+// Collection: "Leads"
+// ============================================
+
+import wixData from 'wix-data';
+import { getSecret } from 'wix-secrets-backend';
+import { fetch } from 'wix-fetch';
+
+export async function submitLead(payload) {
+  const result = payload.result || {};
+
+  // 1) Save to Wix CMS
+  const leadToInsert = {
+    // Contact
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    email: payload.email,
+    phone: payload.phone,
+
+    // Wizard
+    customerType: payload.customerType,
+    boatType: payload.boatType,
+    currentDrive: payload.currentDrive, // inboard/outboard
+
+    boatLength: payload.boatLength,
+    boatWeight: payload.boatWeight,
+
+    waterType: payload.waterType,       // inland/coastal/both
+    tripBucket: payload.tripBucket,     // 2to4/4to8/8plus
+    tripDurationMin: payload.tripDurationMin,
+    tripDurationMax: payload.tripDurationMax,
+
+    // Result (recommended)
+    recommendedMotorName: result.motorName,
+    recommendedMotorPowerKw: toNumberOrNull(result.powerKw),
+    recommendedBatteryKwh: toNumberOrNull(result.batteryKwh),
+    recommendedCruiseSpeedKmh: toNumberOrNull(result.cruiseSpeedKmh),
+
+    submittedAt: new Date()
+  };
+
+  const wixResult = await wixData.insert('Leads', leadToInsert);
+
+  // 2) Send to Pipedrive
+  const apiKey = await getSecret('PIPEDRIVE_API_KEY');
+  const domain = await getSecret('PIPEDRIVE_COMPANY_DOMAIN');
+
+  // Create Person
+  const personData = {
+    name: `${payload.firstName} ${payload.lastName}`.trim(),
+    email: payload.email ? [{ value: payload.email, primary: true, label: 'work' }] : [],
+    phone: payload.phone ? [{ value: payload.phone, primary: true, label: 'work' }] : [],
+    visible_to: 3
+  };
+
+  const personRes = await fetch(`https://${domain}.pipedrive.com/api/v1/persons?api_token=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(personData)
+  });
+
+  const personJson = await personRes.json();
+  if (!personJson?.success) throw new Error(`Pipedrive person create failed: ${safeString(personJson)}`);
+  const personId = personJson.data.id;
+
+  const driveNl = payload.currentDrive === 'inboard' ? 'binnenboord' : 'buitenboord';
+
+  const noteText =
+`**Green Marine Calculator Lead**
+
+**Naam:** ${payload.firstName} ${payload.lastName}
+**E-mail:** ${payload.email}
+**Telefoon:** ${payload.phone}
+
+**Klanttype:** ${payload.customerType}
+**Boottype:** ${payload.boatType}
+**Huidige motor:** ${driveNl}
+
+**Lengte:** ${payload.boatLength} m
+**Gewicht:** ${payload.boatWeight} kg
+
+**Vaargebied:** ${waterLabel(payload.waterType)}
+**Gem. vaartocht:** ${bucketLabel(payload.tripBucket)} (${payload.tripDurationMin}–${payload.tripDurationMax} uur)
+
+**Aanbeveling:**
+- Motor: ${result.motorName ?? '-'}
+- Vermogen: ${fmtNum(result.powerKw, 'kW')}
+- Batterij: ${fmtNum(result.batteryKwh, 'kWh')}
+- Snelheid: ${fmtNum(result.cruiseSpeedKmh, 'km/h')}
+`;
+
+  const noteRes = await fetch(`https://${domain}.pipedrive.com/api/v1/notes?api_token=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      content: noteText,
+      person_id: personId,
+      pinned_to_person_flag: true
+    })
+  });
+
+  const noteJson = await noteRes.json();
+  if (!noteJson?.success) throw new Error(`Pipedrive note create failed: ${safeString(noteJson)}`);
+
+  return {
+    wixId: wixResult._id,
+    pipedrive: { personId, noteId: noteJson.data.id }
+  };
+}
+
+// ---------- helpers ----------
+function bucketLabel(b) {
+  if (b === '2to4') return '2–4 uur';
+  if (b === '4to8') return '4–8 uur';
+  if (b === '8plus') return '8+ uur';
+  return '-';
+}
+
+function waterLabel(w) {
+  if (w === 'inland') return 'Binnenwater';
+  if (w === 'coastal') return 'Kustwater';
+  if (w === 'both') return 'Binnenwater + Kustwater';
+  return '-';
+}
+
+function toNumberOrNull(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function fmtNum(v, unit) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return '-';
+  const txt = (unit === 'km/h') ? n.toFixed(1) : String(Math.round(n));
+  return `${txt} ${unit}`;
+}
+
+function safeString(obj) {
+  try { return JSON.stringify(obj); } catch { return String(obj); }
+}

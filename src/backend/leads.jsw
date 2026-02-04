@@ -1,0 +1,125 @@
+import wixData from 'wix-data';
+import { fetch } from 'wix-fetch';
+import wixSecretsBackend from 'wix-secrets-backend';
+
+/**
+ * Save calculator lead to Wix database
+ * Handles both partial (step-by-step) and complete lead data
+ */
+export async function saveCalculatorLead(payload) {
+  try {
+    const leadData = {
+      // Customer info
+      firstName: payload.firstName || null,
+      lastName: payload.lastName || null,
+      email: payload.email || null,
+      phone: payload.phone || null,
+      
+      // Calculator selections
+      customerType: payload.customerType, // "private" | "business"
+      boatType: payload.boatType,
+      
+      // Boat specifications
+      boatLength: payload.boatLength || payload.lengthM || null,
+      boatWeight: payload.boatWeight || payload.weightKg || null,
+      currentDrive: payload.currentDrive || null,
+      waterType: payload.waterType || null,
+      tripDuration: payload.tripDuration || null,
+      usage: payload.usage || null,
+      
+      // Recommendations (if calculated)
+      recommendedMotor: payload.recommendedMotor || payload.recommendation?.motor || null,
+      recommendedMotorPower: payload.recommendedMotorPower || payload.recommendedKw || payload.recommendation?.motorPower || null,
+      recommendedBattery: payload.recommendedBattery || payload.recommendation?.batteryCapacity || null,
+      recommendedVoltage: payload.recommendedVoltageV || payload.recommendation?.voltage || null,
+      recommendedSpeed: payload.recommendation?.cruisingSpeed || null,
+      recommendedTime: payload.recommendation?.estimatedCruisingTime || null,
+      
+      // Metadata
+      submittedAt: new Date(),
+      source: 'calculator'
+    };
+    
+    const result = await wixData.insert('CalculatorLeads', leadData);
+    console.log('Lead saved successfully:', result._id);
+    return result;
+  } catch (error) {
+    console.error('Failed to save lead to database:', error);
+    throw new Error(`Database error: ${error.message}`);
+  }
+}
+
+/**
+ * Push lead to Pipedrive CRM
+ * Creates a deal and optionally a person/organization
+ */
+export async function pushToPipedrive(payload) {
+  try {
+    const apiKey = await wixSecretsBackend.getSecret('PIPEDRIVE_API_KEY');
+    
+    if (!apiKey) {
+      throw new Error('Pipedrive API key not configured');
+    }
+    
+    // 1. Create or find person
+    let personId = null;
+    if (payload.email || payload.phone) {
+      const personData = {
+        name: [payload.firstName, payload.lastName].filter(Boolean).join(' ') || 'Calculator Lead',
+        email: payload.email ? [{ value: payload.email, primary: true }] : [],
+        phone: payload.phone ? [{ value: payload.phone, primary: true }] : []
+      };
+      
+      const personRes = await fetch(`https://api.pipedrive.com/v1/persons?api_token=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(personData)
+      });
+      
+      const personResult = await personRes.json();
+      if (personResult.success) {
+        personId = personResult.data.id;
+      }
+    }
+    
+    // 2. Create deal
+    const dealTitle = `Green Marine Calculator – ${payload.boatType || 'Lead'} ${payload.customerType === 'business' ? '(Zakelijk)' : ''}`.trim();
+    
+    const dealData = {
+      title: dealTitle,
+      person_id: personId,
+      value: 0, // To be qualified
+      currency: 'EUR',
+      // Map to your Pipedrive custom fields (update field keys as needed)
+      // Example: 'abc123' should be replaced with actual Pipedrive field IDs
+      // You can find these in Pipedrive Settings > Data fields > Deals
+      ...(payload.customerType && { 'customer_type': payload.customerType }),
+      ...(payload.boatType && { 'boat_type': payload.boatType }),
+      ...(payload.boatLength && { 'boat_length_m': payload.boatLength }),
+      ...(payload.boatWeight && { 'boat_weight_kg': payload.boatWeight }),
+      ...(payload.waterType && { 'water_type': payload.waterType }),
+      ...(payload.usage && { 'usage': payload.usage }),
+      ...(payload.recommendedMotor && { 'recommended_motor': payload.recommendedMotor }),
+      ...(payload.recommendedMotorPower && { 'recommended_power_kw': payload.recommendedMotorPower })
+    };
+    
+    const dealRes = await fetch(`https://api.pipedrive.com/v1/deals?api_token=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dealData)
+    });
+    
+    const dealResult = await dealRes.json();
+    
+    if (!dealResult.success) {
+      throw new Error(`Pipedrive API error: ${dealResult.error || 'Unknown error'}`);
+    }
+    
+    console.log('Deal created in Pipedrive:', dealResult.data.id);
+    return dealResult;
+    
+  } catch (error) {
+    console.error('Failed to push to Pipedrive:', error);
+    throw new Error(`Pipedrive integration error: ${error.message}`);
+  }
+}

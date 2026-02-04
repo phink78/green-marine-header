@@ -278,6 +278,8 @@
         max-width: 180px;
         white-space: normal;
         text-align: center;
+        opacity: 1;
+        pointer-events: auto;
       }
 
       .logo-text {
@@ -340,7 +342,7 @@
 
       <!-- Trigger text (visible when scrolled) -->
       <div class="trigger-text" id="triggerText">
-        Ontdek welke motor bij uw boot past
+        Dé elektrische bootmotor van Nederland
       </div>
 
       <!-- Right side -->
@@ -415,14 +417,15 @@
     var triggerText = document.getElementById('triggerText');
     var scrollThreshold = 50;
 
-    // Trigger texts (rotating)
+    // Trigger texts (rotating) - start with most compelling
     var triggerTexts = [
+      "Dé elektrische bootmotor van Nederland",
       "Ontdek welke motor bij uw boot past",
       "Binnen 24 uur persoonlijk advies",
-      "Gratis advies, geen verplichtingen",
       "5 jaar garantie op elke motor"
     ];
     var currentTriggerIndex = 0;
+    var isMobile = window.innerWidth <= 768;
 
     // Scroll handler
     window.addEventListener('scroll', function() {
@@ -442,12 +445,20 @@
 
       setTimeout(function() {
         triggerText.textContent = triggerTexts[currentTriggerIndex];
-        // Fade in (only if scrolled)
-        if (header.classList.contains('scrolled')) {
+        // Fade in (always on mobile, only when scrolled on desktop)
+        if (isMobile || header.classList.contains('scrolled')) {
           triggerText.style.opacity = '1';
         }
       }, 300);
     }, 4000);
+
+    // Update mobile check on resize
+    window.addEventListener('resize', function() {
+      isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        triggerText.style.opacity = '1';
+      }
+    });
   </script>
 
 </body>
